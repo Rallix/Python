@@ -91,7 +91,7 @@ def get_ordinal_suffix_en(number):
 allowed_arguments = ['composer', 'century']
 
 cli_arguments = sys.argv
-print(f"Command line arguments ({len(sys.argv)}): {sys.argv}\n")
+# print(f"Command line arguments ({len(cli_arguments)}): {cli_arguments}\n")
 
 if len(cli_arguments) != 3:
     thisScript = sys.argv[0].split('\\')[-1]
@@ -110,10 +110,13 @@ stat_mode = cli_arguments[2]
 
 # Načíst záznamy ze souboru
 all_records = []
-with open(filename, 'r', encoding='utf-8') as FILE:
-    contents = FILE.read()
-    for plainRecord in contents.split('\n\n'):
-        all_records.append(extract_record(plainRecord))
+try:
+    with open(filename, 'r', encoding='utf-8') as FILE:
+        contents = FILE.read()
+        for plainRecord in contents.split('\n\n'):
+            all_records.append(extract_record(plainRecord))
+except FileNotFoundError:
+    sys.exit(f"The file '{filename}' couldn't be found.")
 
 # Composer
 if stat_mode == 'composer':
