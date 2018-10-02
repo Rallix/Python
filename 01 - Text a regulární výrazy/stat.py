@@ -1,4 +1,4 @@
-"""Input and output."""
+"""Vstup a výstup."""
 
 import re
 import sys
@@ -38,7 +38,8 @@ def parse_composers(comp):
 
 
 def count_composers(records):
-    """Ze seznamu všech záznamů vytvoří uspořádaný seznam dvojic seřazený podle počtu výskytů jednotlivých skladatelů."""
+    """Ze seznamu všech záznamů vytvoří uspořádaný seznam dvojic seřazený
+     podle počtu výskytů jednotlivých skladatelů."""
     composers_counter = Counter()
     for record in records:
         for k, v in record.items():
@@ -53,21 +54,32 @@ def year_to_century(year):
 
 
 def count_centuries(records):
-    """Ze seznamu všech záznamů vytvoří uspořádaný seznam dvojic seřazený podle počtu výskytů skladeb v jednotlivých stoletích."""
+    """Ze seznamu všech záznamů vytvoří uspořádaný seznam dvojic
+    seřazený podle počtu výskytů skladeb v jednotlivých stoletích."""
     centuries_counter = Counter()
     for record in records:
         for k, v in record.items():
             if k == "Composition Year":
-                m = re.match(r"(\d+)\D*?$", v.strip())
-                if not m:
+                value = v.strip()
+                if value == "":
                     continue
-                else:
-                    year = int(m.group(1).strip())
-                    if year < 25 and 'century' in v:
-                        century = year  # v záznamu bylo už přímo století
+
+                m = re.match(r".*?(\d{4})", value)
+                if not m:
+                    if 'century' in value:
+                        # v záznamu bylo už přímo století
+                        m = re.match(r".*?(\d{2})\w{2}", value)
+                        century = int(m.group(1))
                     else:
-                        century = year_to_century(year)
-                    centuries_counter[century] += 1
+                        # hybridní formáty
+                        # raise ValueError(f"Encountered an unhandled date format: '{value}'")
+                        continue
+                else:
+                    # nalezeno čtyřmístné číslo
+                    year = int(m.group(1))
+                    century = year_to_century(year)
+
+                centuries_counter[century] += 1
     return centuries_counter.most_common()
 
 
@@ -84,14 +96,12 @@ def get_ordinal_suffix_en(number):
     return suffix
 
 
-"""-= Main =-"""
+"""~~== Program ==~~"""
 
 # Kontrola argumentů
 
 allowed_arguments = ['composer', 'century']
-
 cli_arguments = sys.argv
-# print(f"Command line arguments ({len(cli_arguments)}): {cli_arguments}\n")
 
 if len(cli_arguments) != 3:
     thisScript = sys.argv[0].split('\\')[-1]
