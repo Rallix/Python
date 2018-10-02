@@ -11,9 +11,9 @@ class Person:
 
     def __str__(self):
         if self.born or self.died:
-            return f"{name} {xstr(self.born)}--{xstr(self.died)})"
+            return f"{self.name} {xstr(self.born)}--{xstr(self.died)})"
         else:
-            return f"{name}"
+            return f"{self.name}"
 
 
 class Voice:
@@ -64,7 +64,9 @@ class Print:
         self.partiture = partiture
 
     def format(self) -> str:
+
         # TODO: Vytvořit původní
+
         return str(self)
 
     def composition(self):
@@ -171,7 +173,7 @@ def record_to_print(record) -> Print:
                               year=try_int(record["Composition Year"]) if try_get(record, "Composition Year") else None,
                               voices=[parse_voice_string(voice) for voice in record["Voice"]],
                               authors=[parse_author_string(author) for author in record["Composer"]])
-    print(str(composition) + "\n")
+    # print(str(composition) + "\n")
     edition = Edition(composition=composition,
                       authors=[],
                       name=try_get(record, "Edition"))
@@ -199,5 +201,4 @@ def load(filename: str) -> List[Print]:
         sys.exit(f"The file '{filename}' couldn't be found.")
 
 
-prints = load("./scorelib.txt")
-# for p in prints: print(p)
+prints = load("./scorelib.txt")  # TODO: Smazat po testování

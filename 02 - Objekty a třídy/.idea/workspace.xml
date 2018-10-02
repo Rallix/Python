@@ -2,9 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a6582951-9c74-419f-96a1-eee3e2bb7534" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../01 - Text a regulární výrazy/scoredat.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scorelib.py" beforeDir="false" afterPath="$PROJECT_DIR$/scorelib.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -57,12 +54,12 @@
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="Python Console" value="137" />
-          <entry key="py" value="4634" />
+          <entry key="py" value="4710" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="4771" />
+          <entry key="Python" value="4847" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -84,13 +81,13 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/scorelib.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="425">
-              <caret line="17" lean-forward="true" selection-start-line="17" selection-end-line="17" />
+            <state relative-caret-position="716">
+              <caret line="203" selection-start-line="203" selection-end-line="203" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
-                <marker date="1538517082474" expanded="true" signature="4155:4558" ph="..." />
-                <marker date="1538517082474" expanded="true" signature="5449:5583" ph="..." />
-                <marker date="1538517082474" expanded="true" signature="6649:6780" ph="..." />
+                <marker date="1538517218945" expanded="true" signature="4167:4570" ph="..." />
+                <marker date="1538517218945" expanded="true" signature="5461:5595" ph="..." />
+                <marker date="1538517218945" expanded="true" signature="6663:6794" ph="..." />
               </folding>
             </state>
           </provider>
@@ -401,13 +398,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/scorelib.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="425">
-          <caret line="17" lean-forward="true" selection-start-line="17" selection-end-line="17" />
+        <state relative-caret-position="716">
+          <caret line="203" selection-start-line="203" selection-end-line="203" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
-            <marker date="1538517082474" expanded="true" signature="4155:4558" ph="..." />
-            <marker date="1538517082474" expanded="true" signature="5449:5583" ph="..." />
-            <marker date="1538517082474" expanded="true" signature="6649:6780" ph="..." />
+            <marker date="1538517218945" expanded="true" signature="4167:4570" ph="..." />
+            <marker date="1538517218945" expanded="true" signature="5461:5595" ph="..." />
+            <marker date="1538517218945" expanded="true" signature="6663:6794" ph="..." />
           </folding>
         </state>
       </provider>
