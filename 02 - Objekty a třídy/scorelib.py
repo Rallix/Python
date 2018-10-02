@@ -11,7 +11,7 @@ class Person:
 
     def __str__(self):
         if self.born or self.died:
-            return f"{self.name} {xstr(self.born)}--{xstr(self.died)})"
+            return f"{self.name} ({xstr(self.born)}--{xstr(self.died)})"
         else:
             return f"{self.name}"
 
@@ -64,9 +64,7 @@ class Print:
         self.partiture = partiture
 
     def format(self) -> str:
-
         # TODO: Vytvořit původní
-
         return str(self)
 
     def composition(self):
