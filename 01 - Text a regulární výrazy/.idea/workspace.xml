@@ -1,23 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="b1788c4f-e9be-4e78-9514-8b0c073b7953" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/scoredat.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../02 - Objekty a třídy/.idea/02 - Objekty.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../02 - Objekty a třídy/.idea/dictionaries/Tom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../02 - Objekty a třídy/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../02 - Objekty a třídy/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../02 - Objekty a třídy/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../02 - Objekty a třídy/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../02 - Objekty a třídy/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../02 - Objekty a třídy/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../02 - Objekty a třídy/Readme.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../02 - Objekty a třídy/scorelib.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../02 - Objekty a třídy/scorelib.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stat.py" beforeDir="false" afterPath="$PROJECT_DIR$/stat.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../02 -/Readme.md" beforeDir="false" />
-    </list>
+    <list default="true" id="b1788c4f-e9be-4e78-9514-8b0c073b7953" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,7 +15,7 @@
     <session id="739350366">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="4" />
+          <entry key="project.closed" value="5" />
           <entry key="project.open.time.2" value="1" />
           <entry key="project.open.time.3" value="2" />
           <entry key="project.open.time.4" value="1" />
@@ -262,7 +246,7 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3296146" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49791667" visible="true" weight="0.33056134" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49791667" weight="0.33056134" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3991684" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />

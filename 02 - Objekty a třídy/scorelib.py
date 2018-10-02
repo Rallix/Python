@@ -1,22 +1,24 @@
-import sys
 import re
+import sys
+from typing import List, Set, Optional
 
 
 class Person:
-    def __init__(self, name: str, born: int, died: int):
+    def __init__(self, name: str, born: Optional[int] = None, died: Optional[int] = None):
         self.name = name
         self.born = born
         self.died = died
 
 
 class Voice:
-    def __init__(self, name: str, range: str):
+    def __init__(self, name: Optional[str] = None, range: Optional[str] = None):
         self.name = name
         self.range = range
 
 
 class Composition:
-    def __init__(self, name: str, incipit: str, key: str, genre: str, year: int, voices: list, authors: list):
+    def __init__(self, name: Optional[str], incipit: Optional[str], key: Optional[str], genre: Optional[str],
+                 year: Optional[int], voices: List[Voice], authors: List[Person]):
         self.name = name
         self.incipit = incipit
         self.key = key
@@ -25,9 +27,13 @@ class Composition:
         self.voices = voices
         self.authors = authors
 
+    def __str__(self):
+        return f"{{'Name': '{self.name}', 'Incipit': '{self.incipit}', 'Key': '{self.key}', 'Genre': '{self.genre}'," \
+               f" 'Year': '{self.year}', 'Voices': '{self.voices}', 'Authors': '{self.authors}'}}"
+
 
 class Edition:
-    def __init__(self, composition: Composition, authors: list, name: str):
+    def __init__(self, composition: Composition, authors: List[Person], name: Optional[str] = None):
         self.composition = composition  # instance of Composition
         self.authors = authors  # a list of Person instances
         self.name = name  # from the Edition: field, or None
@@ -49,23 +55,30 @@ class Print:
 
 def extract_record(record):
     """Z řetězce obsahujícího informace skladbě vytvoří slovník s konkrétními informacemi pod konkrétními klíči."""
-    full_record = {}  # Voice + Incipit can be multiple
     keys = ["Print Number", "Composer", "Title", "Genre", "Key", "Composition Year", "Publication Year", "Edition",
-            "Editor", "Voice 1", "Voice 2", "Voice 3", "Voice 4", "Partiture", "Incipit", "Incipit 2", "Incipit 3"]
+            "Editor", "Partiture"]
+    full_record = {key: None for key in keys}  # Voice + Incipit can be multiple
+    full_record["Voice"] = full_record["Incipit"] = []
     for line in record.split('\n'):
+        # Regular keys
         for key in keys:
-            r_string = f"{key}: (.*)"
-            regex = re.compile(r_string)
+            regex = re.compile(f"{key}: (.*)")
             found = regex.match(line)
-            if found is None:
-                continue
-            else:
-                composer = found.group(1)
+            if found:
+                capture = found.group(1)
                 if key == "Composer":
-                    full_record[key] = parse_composers(composer)
+                    full_record[key] = parse_composers(capture)
                 else:
-                    full_record[key] = composer
-
+                    full_record[key] = capture
+                continue
+        # Numbered keys
+        found = re.match(r"Voice \d+: (\S+)", line)
+        if found:
+            full_record["Voice"].append(found.group(1))
+            continue
+        found = re.match(r"Incipit( \d)*: (\S+)", line)
+        if found:
+            full_record["Incipit"].append(found.group(2))
     return full_record
 
 
@@ -79,23 +92,68 @@ def parse_composers(comp):
     return known_composers
 
 
-def records_to_prints(records):
-    """Zpracuje seznam záznamů pro vytvoření seznamu instancí 'Print'"""
-    # TODO: the function returns a list of Print instances
-    return []
+def get_unique_values(records, key: str) -> Set:
+    """Ze všech záznamů vytáhne pouze unikátní hodnoty pro konkrétní klíč."""
+    values = [record[key] for record in records]
+    return set(values)
 
 
-def load(filename: str):
+def try_int(s: str) -> Optional[int]:
+    """Zkusí převést řetězec na číslo, přičemž vrátí 'None', pokud je ve špatném formátu."""
+    try:
+        number = int(s)
+        return number
+    except ValueError:
+        return None
+
+
+def try_get(record, key: str) -> Optional[str]:
+    """Zkusí ze záznamu vzít hodnotu pod určitým klíčem, je-li klíč přítomen."""
+    return record[key] if key in record else None
+
+
+def record_to_print(record) -> Print:
+    """Z jednoho záznamu vytvoří instanci Print"""
+    print(record)
+    composition = Composition(name=try_get(record, "Title"),
+                              incipit=try_get(record, "Incipit"),
+                              key=try_get(record, "Key"),
+                              genre=try_get(record, "Genre"),
+                              year=try_int(record["Composition Year"]) if try_get(record, "Composition Year") else None,
+                              voices=[],
+                              authors=record["Composer"])
+    print(str(composition) + "\n")
+    edition = Edition(composition=composition,
+                      authors=[],
+                      name=try_get(record, "Edition"))
+    partiture = True if any(word in record["Partiture"] for word in ['yes', 'incomplete', 'piano']) else False
+
+    # print(f"Partiture '{record['Partiture']}' --> '{partiture}'")
+
+    return Print(edition, record["Print Number"], partiture)
+
+
+def records_to_prints(records) -> List[Print]:
+    """Zpracuje seznam záznamů pro vytvoření seznamu instancí třídy 'Print'"""
+
+    # for a in get_unique_values(records, 'Partiture'): print(a)
+
+    return [record_to_print(r) for r in records]
+
+
+def load(filename: str) -> List[Print]:
+    """Funkce, která načte zadaný soubor, projde jej a vrátí seřazený seznam instancí 'Print'"""
     all_records = []
     try:
         with open(filename, 'r', encoding='utf-8') as FILE:
             contents = FILE.read()
             for plainRecord in contents.split('\n\n'):
                 all_records.append(extract_record(plainRecord))
-        return records_to_prints(all_records)
+        unsorted_prints = records_to_prints(all_records)
+        return sorted(unsorted_prints, key=lambda p: p.print_id)
     except FileNotFoundError:
         sys.exit(f"The file '{filename}' couldn't be found.")
 
 
-records = load("./scorelib.txt")
-print(records)
+prints = load("./scorelib.txt")
+# for p in prints: print(p)
