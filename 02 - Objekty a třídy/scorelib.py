@@ -9,11 +9,27 @@ class Person:
         self.born = born
         self.died = died
 
+    def __str__(self):
+        if self.born or self.died:
+            return f"{name} {xstr(self.born)}--{xstr(self.died)})"
+        else:
+            return f"{name}"
+
 
 class Voice:
     def __init__(self, name: Optional[str] = None, range: Optional[str] = None):
         self.name = name
         self.range = range
+
+    def __str__(self):
+        value = ""
+        if self.range:
+            value += f"{self.range}"
+            if self.name:
+                value += ", "
+        if self.name:
+            value += f"{self.name}"
+        return value
 
 
 class Composition:
@@ -28,8 +44,10 @@ class Composition:
         self.authors = authors
 
     def __str__(self):
-        return f"{{'Name': '{self.name}', 'Incipit': '{self.incipit}', 'Key': '{self.key}', 'Genre': '{self.genre}'," \
-               f" 'Year': '{self.year}', 'Voices': '{self.voices}', 'Authors': '{self.authors}'}}"
+        return f"Composition >> {{'Name': '{self.name}', 'Incipit': '{self.incipit}', 'Key': '{self.key}', " \
+               f"'Genre': '{self.genre}', 'Year': '{self.year}', " \
+               f"'Voices': '{[str(voice) for voice in self.voices]}', " \
+               f"'Authors': '{[str(author) for author in self.authors]}'}}"
 
 
 class Edition:
@@ -45,9 +63,9 @@ class Print:
         self.print_id = print_id  # from Print Number
         self.partiture = partiture
 
-    def format(self):
-        # TODO: reconstructs and prints the original stanza
-        pass
+    def format(self) -> str:
+        # TODO: Vytvořit původní
+        return str(self)
 
     def composition(self):
         return self.edition.composition
@@ -72,24 +90,55 @@ def extract_record(record):
                     full_record[key] = capture
                 continue
         # Numbered keys
-        found = re.match(r"Voice \d+: (\S+)", line)
+        found = re.match(r"Voice \d+: (\S.*)", line)
         if found:
             full_record["Voice"].append(found.group(1))
             continue
-        found = re.match(r"Incipit( \d)*: (\S+)", line)
+        found = re.match(r"Incipit( \d)*: (\S.*)", line)
         if found:
             full_record["Incipit"].append(found.group(2))
     return full_record
 
 
+def xstr(s):
+    """Metoda, co vrací prázdný řetězec v případě, že předaná hodnota je None."""
+    return '' if s is None else str(s)
+
+
 def parse_composers(comp):
     """Rozdělí řetězec se jmény skladatelů na seznam obsahující jednotlivé skladatele."""
-    composers = re.sub(r" \(.*?(--?|\+).*?\)", "", comp).split(
-        ';')  # odstranit závorku s lety a rozdělit podle středníků
+    composers = comp.split(';') # rozdělit podle středníků
+    # re.sub(r" \(.*?(--?|\+).*?\)", "", comp)  # odstranit závorku s lety
     composers = list(map(str.strip, composers))  # odstranit nadbytečné mezery
     unknown = [None, '', 'Anonym', 'Anonymous', 'Various', 'Unknown']
     known_composers = list(filter(lambda c: c not in unknown, composers))  # vyloučit neznámé skladatele
     return known_composers
+
+
+def parse_author_string(raw: str) -> Person:
+    """Vytvoří instanci autora z řetězce obsahujícího relevantní informace."""
+    name = re.sub(r"( \(.*?\))", "", raw)
+    found = re.match(r".*?\((\d{4})?--(\d{4})?\).*?", raw)
+    if found:
+        born = found.group(1) if found.group(1) else None
+        died = found.group(2) if found.group(2) else None
+        return Person(name, born, died)
+    else:
+        return Person(name, None, None)
+
+
+def parse_voice_string(raw: str) -> Voice:
+    """Vytvoří hlas z řetězce obsahujícího hlasové informace."""
+    found = re.match(r"(.*?)(\S+?--\S+?)(, )?(.*)", raw)
+    if not found:
+        return Voice(raw, None)
+    else:
+        range = found.group(2)
+        name = found.group(1) + found.group(4)
+        if name:
+            return Voice(name, range)
+        else:
+            return Voice(None, range)
 
 
 def get_unique_values(records, key: str) -> Set:
@@ -114,30 +163,25 @@ def try_get(record, key: str) -> Optional[str]:
 
 def record_to_print(record) -> Print:
     """Z jednoho záznamu vytvoří instanci Print"""
-    print(record)
+    # print(record)
     composition = Composition(name=try_get(record, "Title"),
                               incipit=try_get(record, "Incipit"),
                               key=try_get(record, "Key"),
                               genre=try_get(record, "Genre"),
                               year=try_int(record["Composition Year"]) if try_get(record, "Composition Year") else None,
-                              voices=[],
-                              authors=record["Composer"])
+                              voices=[parse_voice_string(voice) for voice in record["Voice"]],
+                              authors=[parse_author_string(author) for author in record["Composer"]])
     print(str(composition) + "\n")
     edition = Edition(composition=composition,
                       authors=[],
                       name=try_get(record, "Edition"))
     partiture = True if any(word in record["Partiture"] for word in ['yes', 'incomplete', 'piano']) else False
 
-    # print(f"Partiture '{record['Partiture']}' --> '{partiture}'")
-
     return Print(edition, record["Print Number"], partiture)
 
 
 def records_to_prints(records) -> List[Print]:
     """Zpracuje seznam záznamů pro vytvoření seznamu instancí třídy 'Print'"""
-
-    # for a in get_unique_values(records, 'Partiture'): print(a)
-
     return [record_to_print(r) for r in records]
 
 
