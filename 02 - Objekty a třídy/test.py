@@ -12,5 +12,5 @@ if len(argv) != 2:
 filename = argv[1]
 prints = scorelib.load(filename)
 
-for p in prints:
-    print(f"{p.format()}\n\n")
+# for p in prints:
+#     print(str(p))

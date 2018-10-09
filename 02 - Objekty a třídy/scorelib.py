@@ -56,6 +56,10 @@ class Edition:
         self.authors = authors  # a list of Person instances
         self.name = name  # from the Edition: field, or None
 
+    def __str__(self):
+        return f"Edition >> {{'Composition': '{self.composition is not None} '" \
+               f"'Authors': '{[str(author) for author in self.authors] if self.authors else ''} 'Name: {self.name}\n'}}"
+
 
 class Print:
     def __init__(self, edition: Edition, print_id: int, partiture: bool):
@@ -63,12 +67,44 @@ class Print:
         self.print_id = print_id  # from Print Number
         self.partiture = partiture
 
-    def format(self) -> str:
-        # TODO: Vytvořit původní
-        return str(self)
+    def format(self):
+        base = str(self)
+        print(f"{base}\n");
 
     def composition(self):
         return self.edition.composition
+
+    def __str__(self) -> str:
+        # TODO: Vytvořit původní
+        """
+        Print Number: 1
+        Composer: Weber, Carl Maria
+        Title: Concerto for bassoon and orchestra op. 75
+        Genre: solo concerto
+        Key: Bes
+        Composition Year:
+        Publication Year:
+        Edition: modern
+        Editor:
+        Voice 1: Bes1--d2, bassoon, part
+        Partiture: no
+        Incipit: treble 4/4 f'2 c8. a16 f8. a16 |
+        """
+        print_number = f"Print Number: {self.print_id}\n"
+        composer = f"Composer: {'; '.join(str(self.composition().authors)) if self.composition().authors else ''}\n"
+        title = f"Title: {self.edition.composition.name}\n"
+        genre = f"Genre: {self.edition.composition.genre}\n"
+        key = f"Key: {self.edition.composition.key}\n"
+        comp_year = f"Composition Year: {self.edition.composition.year}\n"
+        pub_year = f"Publication Year: ?　\n"
+        edition = f"Edition: {self.edition}\n"
+        editor = f"Editor: {'; '.join([author.name for author in self.edition.authors] if self.edition.authors else '')}\n"
+        partiture = f"Partiture: {self.partiture}\n"
+        voice = f"Voice: {'; '.join(str(self.edition.composition.voices))}\n"
+        incipit = f"Incipit: {self.edition.composition.incipit}\n"
+
+        return f"{print_number}{composer}{title}{genre}{key}{comp_year}" \
+               f"{pub_year}{edition}{editor}{partiture}{voice}{incipit}\n"
 
 
 def extract_record(record):
@@ -84,7 +120,7 @@ def extract_record(record):
             found = regex.match(line)
             if found:
                 capture = found.group(1)
-                if key == "Composer":
+                if key == "Composer" or key == "Editor":
                     full_record[key] = parse_composers(capture)
                 else:
                     full_record[key] = capture
@@ -107,7 +143,7 @@ def xstr(s):
 
 def parse_composers(comp):
     """Rozdělí řetězec se jmény skladatelů na seznam obsahující jednotlivé skladatele."""
-    composers = comp.split(';') # rozdělit podle středníků
+    composers = comp.split(';')  # rozdělit podle středníků
     # re.sub(r" \(.*?(--?|\+).*?\)", "", comp)  # odstranit závorku s lety
     composers = list(map(str.strip, composers))  # odstranit nadbytečné mezery
     unknown = [None, '', 'Anonym', 'Anonymous', 'Various', 'Unknown']
@@ -163,17 +199,19 @@ def try_get(record, key: str) -> Optional[str]:
 
 def record_to_print(record) -> Print:
     """Z jednoho záznamu vytvoří instanci Print"""
-    # print(record)
+    # TODO: Initialize properly all values
+    #  print(record)
     composition = Composition(name=try_get(record, "Title"),
                               incipit=try_get(record, "Incipit"),
                               key=try_get(record, "Key"),
                               genre=try_get(record, "Genre"),
                               year=try_int(record["Composition Year"]) if try_get(record, "Composition Year") else None,
                               voices=[parse_voice_string(voice) for voice in record["Voice"]],
+                              # TODO: Voice is being split into individual letters (→ stop)
                               authors=[parse_author_string(author) for author in record["Composer"]])
-    # print(str(composition) + "\n")
+    #  print("\n" + str(composition) + "\n")
     edition = Edition(composition=composition,
-                      authors=[],
+                      authors=[parse_author_string(author) for author in record["Editor"]] if record["Editor"] else None,
                       name=try_get(record, "Edition"))
     partiture = True if any(word in record["Partiture"] for word in ['yes', 'incomplete', 'piano']) else False
 
@@ -199,4 +237,4 @@ def load(filename: str) -> List[Print]:
         sys.exit(f"The file '{filename}' couldn't be found.")
 
 
-prints = load("./scorelib.txt")  # TODO: Smazat po testování
+# prints = load("./scorelib.txt")  # TODO: Smazat po testování
