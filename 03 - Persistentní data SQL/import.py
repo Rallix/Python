@@ -204,9 +204,8 @@ filename = sys.argv[1]
 database = sys.argv[2]
 
 # Removes the old file.
-# TODO: Delete after test?
-if os.path.exists(database):
-    os.remove(database)
+# if os.path.exists(database):
+#     os.remove(database)
 
 all_prints = scorelib.load(filename)
 
