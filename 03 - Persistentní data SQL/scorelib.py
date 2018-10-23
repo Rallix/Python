@@ -47,6 +47,7 @@ class Print:
         return self.edition.score
 
     def get_people(self) -> List[Person]:
+        """Vrátí spojený seznam autorů a editorů."""
         authors = self.score().authors
         editors = self.edition.authors
         if not authors:
@@ -120,12 +121,11 @@ def record_to_print(record) -> Print:
                   authors=[parse_author_string(author) for author in record["Composer"]])
     #  print("\n" + str(composition) + "\n")
     edition = Edition(score=score,
-                      authors=[parse_author_string(author) for author in record["Editor"]] if record[
-                          "Editor"] else None,
+                      authors=[parse_author_string(author) for author in record["Editor"]] if record["Editor"] else [],
                       name=try_get(record, "Edition"))
     partiture = True if any(word in record["Partiture"] for word in ['yes', 'incomplete', 'piano']) else False
 
-    return Print(edition, record["Print Number"], partiture)
+    return Print(edition, record["Print Number"].strip(), partiture)
 
 
 def records_to_prints(records) -> List[Print]:

@@ -60,3 +60,7 @@ target/
 # Visual Studio
 /.vs/
 **/.vs/**
+
+# PyCharm
+/.idea/
+**/\.idea/
