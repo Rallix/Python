@@ -54,9 +54,12 @@ class EquationSystem:
         self.equations = equations
         self.constants = [eq.constant for eq in equations]
         self.variables = {var: [] for var in self.unique_names()}
-        for equation in equations:
-            for var in equation.variables:
+        for i in range(len(equations)):
+            for var in equations[i].variables:
                 self.variables[var[1]].append(var[0])  # {'x': [2, 1], 'y': [3, -1]}
+            for name in self.unique_names():
+                if len(self.variables[name]) != (i+1):
+                    self.variables[name].append(0)  # Přidat nulu, pokud se v rovnici něco nevyskytuje
 
     def unique_names(self):
         """Získat unikátní názvy proměnných napříč rovnicemi."""
@@ -68,28 +71,38 @@ class EquationSystem:
                     variable_names.append(name)
         return sorted(variable_names)
 
-    def get_matix(self):
-        names = self.unique_names()
-        matrix = np.zeros(len(names), len(self.equations))
-        print(matrix)
-        # for eq in self.equations:
-        #     for name in names:
-        #         if eq.variables
-
-
     def solve(self) -> np.ndarray:
-        variables = np.array(list(self.variables.values()))  # [[3,1], [1,2]]
+        variables = np.column_stack(list(self.variables.values()))  # [[3,1], [1,2]]
         constants = np.array(self.constants)  # [9,8]
-        print(variables)
-        print(constants)
-        return np.linalg.solve(variables, constants)
+        return np.linalg.solve(variables, constants,)  # [ 2.,  3.]
+
+    def has_solution(self) -> bool:
+        # Ranks must be equal
+        augmented_matrix = np.column_stack(list(self.variables.values()) + list((self.constants,)))
+        return self.rank() == np.linalg.matrix_rank(augmented_matrix)
+
+    def is_solution_unique(self) -> bool:
+        # Number of rows is equal to the rank of the coefficient matrix
+        return len(self.unique_names()) == self.rank()
+
+    def solution_space_dimension(self) -> int:
+        return len(self.unique_names()) - self.rank()
 
     def rank(self):
-        return np.linalg.matrix_rank(self.variables)  # TODO: Check + fix
+        """Vrátí hodnost matice koeficientů."""
+        coefficient_matrix = np.column_stack(list(self.variables.values()))
+        return np.linalg.matrix_rank(coefficient_matrix)
 
     def solution(self) -> str:
-        print(self.solve())
-        return str(self.constants) + " " + str(self.variables)
+        if not self.has_solution():
+            return "no solution"
+        elif not self.is_solution_unique():
+            return f"solution space dimension: {self.solution_space_dimension()}"
+        # ↓ Existuje unikátní řešení
+        solved = self.solve()
+        names = self.unique_names()
+        solution = list(zip(names, solved))
+        return "solution: " + ", ".join([f"{x[0]} = {x[1]}" for x in solution])
 
 
 if len(argv) != 2:
