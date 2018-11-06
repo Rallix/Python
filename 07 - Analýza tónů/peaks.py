@@ -1,7 +1,5 @@
 import wave
 import numpy as np
-# import matplotlib.pyplot as plt
-from sys import argv, stdout
 from typing import Tuple, Optional
 from struct import unpack
 
@@ -46,16 +44,3 @@ def audio_fourier(audio: wave.Wave_read) -> str:
         return "no peaks"
     else:
         return f"low = {low}, high = {high}"
-
-
-if len(argv) != 2:
-    exit("The program expects to be called with a single command-line argument:\n"
-         "./peaks.py audio.wav")
-filename = argv[1]
-if not str(filename).endswith(".wav"):
-    exit("The input file must be a Waveform audio file ('*.wav').")
-try:
-    with wave.open(filename, 'rb') as AUDIO:
-        stdout.write(audio_fourier(AUDIO) + "\n")
-except FileNotFoundError:
-    exit(f"The file '{filename}' couldn't be found.")
