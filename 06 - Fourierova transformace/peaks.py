@@ -44,7 +44,7 @@ def fourier(audio: wave.Wave_read) -> Tuple[Optional[int], Optional[int]]:
             if not low:
                 low = j
                 high = j
-            else:
+            elif j > high:
                 high = j
     if not any((low, high)):
         return None, None
