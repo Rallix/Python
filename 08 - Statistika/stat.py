@@ -12,51 +12,54 @@ def quartiles(csv: pd.DataFrame):
 
 def get_stats(csv: pd.DataFrame) -> Dict[str, Dict[str, float]]:
     """Získá všechny hledané statistické hodnoty."""
-    csv = csv.drop(['student'], axis=1)  # Nepotřebujeme hodnoty studenta
     output = {}
     for key in csv.keys():
         data = {
             'mean': csv.mean()[key],
             'median': csv.median()[key],
             'first': quartiles(csv)[0][key],
-            'last': quartiles(csv)[1][key],
+            'last': quartiles(csv)[1][key],  # TODO: Liší se
             'passed': len(csv[(csv[key] > 0)])
         }
-        output[globals()[mode](key)] = data
+        output[key] = data
     return output
 
 
-def dates(key: str) -> str:
-    """Změní formát z deadlines na dates (YYYY-MM-DD)."""
-    return key.strip().split('/')[0]
-
-
-def exercises(key: str) -> str:
-    """Změní formát z deadlines na exercises (NN)."""
-    return key.strip().split('/')[1]
-
-
-def deadlines(key: str) -> str:
-    """Změní formát z deadlines na deadlines (YYYY-MM-DD/NN)."""
-    return key
+def merge_dates(csv: pd.DataFrame) -> Dict[str, Dict[str, float]]:
+    """Spojí jednotlivé úseky do jednoho."""
+    merged = pd.DataFrame()
+    cache = {}
+    for key in csv.keys():
+        date, exercises = key.strip().split('/')
+        column = date if MODE == 'dates' else exercises
+        slice = csv.loc[:, key]
+        if column not in cache:
+            cache[column] = slice
+        else:
+            # m = cache[column] + slice
+            cache[column] += slice
+    for key, val in cache.items():
+        merged[key] = val
+    return get_stats(merged)
 
 
 if len(argv) != 3:
     exit("The program expects to be called with two command-line arguments:\n"
          "./stat.py file.csv dates|deadlines|exercises")
-filename = argv[1]
+FILENAME = argv[1]
 
-mode = argv[2]
+MODE = argv[2]
 modes = ["dates", "deadlines", "exercises"]
 
-if mode not in modes:
+if MODE not in modes:
     exit(f"Incorrect mode: must be one of: #{', '.join(modes)}")
 
 try:
-    CSV = pd.read_csv(filename)
-    json_data = json.dumps(get_stats(CSV), sort_keys=False, indent=2)
-    stdout.write(json_data)
+    CSV = pd.read_csv(FILENAME).drop(['student'], axis=1)  # Nepotřebujeme ID studentů
+    stats = get_stats(CSV) if MODE == 'deadlines' else merge_dates(CSV)
+    json.dump(stats, sort_keys=False, indent=2, fp=stdout)
+
 except pd.errors.EmptyDataError:
-    exit(f"The CSV file '#{filename}' contains no data.")
+    exit(f"The CSV file '#{FILENAME}' contains no data.")
 except FileNotFoundError:
-    exit(f"Could not find the CSV file: #{filename}")
+    exit(f"Could not find the CSV file: #{FILENAME}")
