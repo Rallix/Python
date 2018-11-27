@@ -1,0 +1,225 @@
+{
+	"info": {
+		"_postman_id": "6e0e182a-1d64-430c-9530-082bea878287",
+		"name": "Python",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Valid + Timeout",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"type\": \"GET\",\n\t\"url\": \"http://example.com\",\n\t\"headers\": {\n\t\t\"Accept-Encoding\": \"utf-8\"\n\t},\n\t\"timeout\": 3\n}"
+				},
+				"url": {
+					"raw": "localhost:9001",
+					"host": [
+						"localhost"
+					],
+					"port": "9001",
+					"query": [
+						{
+							"key": "type",
+							"value": "GET",
+							"disabled": true
+						},
+						{
+							"key": "url",
+							"value": "http://example.com",
+							"disabled": true
+						},
+						{
+							"key": "headers",
+							"value": "--list--",
+							"disabled": true
+						},
+						{
+							"key": "timeout",
+							"value": "3",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Python IX."
+			},
+			"response": []
+		},
+		{
+			"name": "Invalid (format)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"type\": \"GET\",\n\t\"url\": \"http://example.com\"\n\t\"headers\": {\n\t\t\"Accept-Encoding\": \"utf-8\"\n\t}\n\t\"timeout\": 3\n}"
+				},
+				"url": {
+					"raw": "localhost:9001",
+					"host": [
+						"localhost"
+					],
+					"port": "9001",
+					"query": [
+						{
+							"key": "type",
+							"value": "GET",
+							"disabled": true
+						},
+						{
+							"key": "url",
+							"value": "http://example.com",
+							"disabled": true
+						},
+						{
+							"key": "headers",
+							"value": "--list--",
+							"disabled": true
+						},
+						{
+							"key": "timeout",
+							"value": "3",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Python IX."
+			},
+			"response": []
+		},
+		{
+			"name": "Invalid (type)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"type\": \"PUT\",\n\t\"url\": \"http://example.com\",\n\t\"headers\": {\n\t\t\"Accept-Encoding\": \"utf-8\"\n\t},\n\t\"timeout\": 3\n}"
+				},
+				"url": {
+					"raw": "localhost:9001",
+					"host": [
+						"localhost"
+					],
+					"port": "9001",
+					"query": [
+						{
+							"key": "type",
+							"value": "GET",
+							"disabled": true
+						},
+						{
+							"key": "url",
+							"value": "http://example.com",
+							"disabled": true
+						},
+						{
+							"key": "headers",
+							"value": "--list--",
+							"disabled": true
+						},
+						{
+							"key": "timeout",
+							"value": "3",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Python IX."
+			},
+			"response": []
+		},
+		{
+			"name": "Valid (default GET)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"url\": \"http://example.com\",\n\t\"headers\": {\n\t\t\"Accept-Encoding\": \"utf-8\"\n\t},\n\t\"timeout\": 3\n}"
+				},
+				"url": {
+					"raw": "localhost:9001",
+					"host": [
+						"localhost"
+					],
+					"port": "9001",
+					"query": [
+						{
+							"key": "type",
+							"value": "GET",
+							"disabled": true
+						},
+						{
+							"key": "url",
+							"value": "http://example.com",
+							"disabled": true
+						},
+						{
+							"key": "headers",
+							"value": "--list--",
+							"disabled": true
+						},
+						{
+							"key": "timeout",
+							"value": "3",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Python IX."
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:9001",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:9001",
+					"host": [
+						"localhost"
+					],
+					"port": "9001"
+				},
+				"description": "Python IX."
+			},
+			"response": []
+		}
+	]
+}
