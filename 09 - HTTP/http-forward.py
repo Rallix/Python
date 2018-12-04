@@ -5,7 +5,7 @@ import http.client
 from http import HTTPStatus
 from urllib import parse
 from urllib import request as rq
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from sys import argv
 
@@ -34,9 +34,8 @@ class WebHandler(BaseHTTPRequestHandler):
             content = json.loads(field_data)
             keys = content.keys()
             if 'type' not in keys:
-                # TODO: Metoda 'respond' typ do výstupu ovšem nepřidává… Ok?
+                # TODO: Metoda 'respond' typ do výstupu nepřidává… Ok?
                 content['type'] = 'GET'  # default (OK)
-
             if content['type'].upper() == 'POST':
                 if 'url' not in keys or 'content' not in keys:
                     raise ValueError  # chybí url, content pro POST
@@ -44,16 +43,16 @@ class WebHandler(BaseHTTPRequestHandler):
                 content['content'] = None
             elif content['type'].upper() not in ['GET', 'POST']:
                 raise ValueError  # nepodporovaný request
-
             if 'headers' not in keys:
                 content['headers'] = None
             if 'timeout' not in keys:
                 content['timeout'] = 1
             post = rq.Request(
                 method=content['type'],
-                headers=content['headers'],
+                headers=content['headers'] or {},
                 url=content['url'],
-                data=content['content']
+                # ↓ TODO: 'POST /'  | AttributeError: 'NoneType' object has no attribute 'items'
+                data=content['content'] if content else None
             )
             self.respond(post, timeout=content['timeout'])
         except ValueError:
@@ -69,7 +68,7 @@ class WebHandler(BaseHTTPRequestHandler):
         j = dict()
         mimetype = 'application/json'
         try:
-            with rq.urlopen(url=request.get_full_url(), timeout=timeout) as response:
+            with rq.urlopen(url=request, timeout=timeout) as response:
                 self.send_response(code=HTTPStatus.OK)  # or response.getcode()
                 self.send_header('Content-type', mimetype)
                 self.end_headers()
@@ -82,8 +81,12 @@ class WebHandler(BaseHTTPRequestHandler):
                 except ValueError:  # 'Easier to Ask for Forgiveness than Permission'
                     # Chybný formát => string 'content'
                     j['content'] = data.decode('utf-8')
-        except HTTPError as he:
-            print(f"{he.url} ({he.code}): {he.msg}")
+        except (HTTPError, URLError) as error:
+            # URLError [WinError 10061] Nemohlo být vytvořeno žádné připojení, protože cílový počítač je aktivně odmítl
+            self.send_response(code=HTTPStatus.OK)
+            self.send_header('Content-type', mimetype)
+            self.end_headers()
+            j['code'] = error.code
         except socket.timeout:
             # 408 HTTPStatus.REQUEST_TIMEOUT
             self.send_response(code=HTTPStatus.REQUEST_TIMEOUT)
@@ -91,13 +94,14 @@ class WebHandler(BaseHTTPRequestHandler):
             self.end_headers()
             j['code'] = 'timeout'
         finally:
-            # ↓ TODO: A bytes-like object is required… (~ bytes + utf-8)
+            # ↓ A bytes-like object is required… (~ bytes + utf-8)
             self.wfile.write(bytes(json.dumps(j), 'utf-8'))
 
 
 if len(argv) != 3:
     exit("The program expects to be called with two command-line arguments:\n"
          "./http-forward.py 9001 example.com")
+
 HOST_NAME = argv[2]  # upstream
 if not HOST_NAME.startswith('http://') or HOST_NAME.startswith('https://'):
     HOST_NAME = f"http://{HOST_NAME}"

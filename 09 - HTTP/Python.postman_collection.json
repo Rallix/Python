@@ -204,18 +204,61 @@
 		{
 			"name": "localhost:9001",
 			"request": {
-				"method": "GET",
-				"header": [],
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
-					"raw": ""
+					"raw": "{ \r\n\t\"url\" : \"http://localhost/index.html\", \r\n\t\"timeout\" : 3, \r\n\t\"type\" : \"GET\" \r\n}"
 				},
 				"url": {
-					"raw": "localhost:9001",
+					"raw": "localhost:9001/",
 					"host": [
 						"localhost"
 					],
-					"port": "9001"
+					"port": "9001",
+					"path": [
+						""
+					]
+				},
+				"description": "Python IX."
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:9001",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \r\n\t\"url\" : \"http://localhost/index.html\", \r\n\t\"timeout\" : 3, \r\n\t\"type\" : \"GET\" \r\n}"
+				},
+				"url": {
+					"raw": "localhost:9001/",
+					"host": [
+						"localhost"
+					],
+					"port": "9001",
+					"path": [
+						""
+					]
 				},
 				"description": "Python IX."
 			},
