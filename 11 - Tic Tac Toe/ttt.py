@@ -137,11 +137,10 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
                 return player  # zbylá dvě pole se shodují
         # Remíza
         flatten = lambda l: [item for sublist in l for item in sublist]
-        flat_board = flatten(board)
-        for field in flat_board:
-            if field == 0:
-                return None  # Zbývají volná pole
-        return 0
+        if 0 in flatten(board):
+            return None  # Zbývají volná pole
+        else:
+            return 0  # Remíza
 
 
 if len(argv) != 2:
