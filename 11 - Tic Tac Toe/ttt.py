@@ -99,7 +99,7 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
                 result['status'] = 'ok'
                 game['board'][row][column] = player
                 game['next'] = 1 if player == 2 else 2  # předpokládá správnost
-                game['winner'] = self.winner(game['board'])
+                game['winner'] = self.decide_winner(game['board'])
 
             self.send_response(HTTPStatus.OK)
             self.send_header('Content-type', self.mimetype)
@@ -113,9 +113,35 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
             # game = self.games[idx]
             self.send_error(HTTPStatus.BAD_REQUEST, "Entered an ID of a non-existent game.")
 
-    def winner(self, board):
-        """Zjistí vítěze hry"""
-        return None
+    @staticmethod
+    def decide_winner(board):
+        """Zjistí vítěze hry z pole 3x3 – nebo remízu."""
+        # Řádky
+        for i in range(3):
+            row = board[i]
+            player = row[0]  # první pole řádku
+            if row[1] == player and row[2] == player:
+                return player  # zbylá dvě pole se shodují
+        # Sloupce
+        for i in range(3):
+            col = board[:, i]
+            player = col[0]  # první pole sloupce
+            if col[1] == player and col[2] == player:
+                return player  # zbylá dvě pole se shodují
+        # Diagonály
+        dia1 = [board[0][0], board[1][1], board[2][2]]
+        dia2 = [board[0][2], board[1][1], board[2][0]]
+        for dia in [dia1, dia2]:
+            player = dia[0]  # první pole diagonály
+            if dia[1] == player and dia[2] == player:
+                return player  # zbylá dvě pole se shodují
+        # Remíza
+        flatten = lambda l: [item for sublist in l for item in sublist]
+        flat_board = flatten(board)
+        for field in flat_board:
+            if field == 0:
+                return None  # Zbývají volná pole
+        return 0
 
 
 if len(argv) != 2:
