@@ -88,7 +88,7 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
             # Ověření
             if game['next'] != player:
                 result['message'] = f"It's not currently player {player}'s turn.'"
-            elif game['board']['x']['y'] != 0:
+            elif game['board'][row][column] != 0:
                 result['message'] = f"The required field is not blank."
             elif row not in range(0, 2) or column not in range(0, 2):
                 result['message'] = "The given coordinates are out of the game board."
