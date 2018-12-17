@@ -93,16 +93,17 @@ class Print:
         print_number = f"Print Number: {self.print_id}\n"
         composer = f"Composer: {'; '.join([str(author) for author in self.composition().authors]) if self.composition().authors else ''}\n"
         title = f"Title: {self.edition.composition.name}\n"
-        genre = f"Genre: {self.edition.composition.genre}\n"
-        key = f"Key: {self.edition.composition.key}\n"
+        genre = f"Genre: {xstr(self.edition.composition.genre)}\n"
+        key = f"Key: {xstr(self.edition.composition.key)}\n"
         comp_year = f"Composition Year: {self.edition.composition.year if self.edition.composition.year else ''}\n"
         pub_year = f"Publication Year: \n"  # není třeba uvádět
         edition = f"Edition: {xstr(self.edition.name) if self.edition else ''}\n"
         editor = f"Editor: {'; '.join([author.name for author in self.edition.authors]) if self.edition.authors else ''}\n"
         partiture = f"Partiture: {'yes' if self.partiture else 'no'}\n"
-        voice = '\n'.join([f"Voice {i+1}: {str(self.edition.composition.voices[i]).strip()}" for i in range(len(self.edition.composition.voices))]) + "\n"  # \
-            # f"Voice: {'; '.join([str(voice).strip() for voice in self.edition.composition.voices])}\n"
-        incipit = f"Incipit: {self.edition.composition.incipit}\n"
+        voice = '\n'.join([f"Voice {i+1}: {str(self.edition.composition.voices[i]).strip()}"
+                           for i in range(len(self.edition.composition.voices))])\
+                + "\n" if len(self.edition.composition.voices) > 0 else ''
+        incipit = f"Incipit: {xstr(self.edition.composition.incipit)}\n"
 
         return f"{print_number}{composer}{title}{genre}{key}{comp_year}" \
                f"{pub_year}{edition}{editor}{partiture}{voice}{incipit}\n"
