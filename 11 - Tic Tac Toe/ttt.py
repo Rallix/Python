@@ -1,11 +1,7 @@
 import re
 import json
-import socket
-import http.client
 from http import HTTPStatus
 from urllib import parse
-from urllib import request as rq
-from urllib.error import HTTPError, URLError
 from socketserver import ThreadingMixIn
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from sys import argv
@@ -25,9 +21,17 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
         url = self.path
         print(url)
 
-        mode, params = url.split('?')
+        mode, found, params = url.partition('?')
         mode = re.sub('^\W*', '', mode)  # odstranit všechnu bagáž ze začátku
         params = parse.parse_qs(params)  # {'key' : ['value',…]}
+        print(f"{mode}: {params}")
+        if not mode:
+            return self.send_error(HTTPStatus.BAD_REQUEST, f"No request provided. Try 'start', 'status' or 'play'.")
+        if not found and mode != 'list':
+            if mode == 'start':
+                params = {'name': ['']}  # výchozí jméno
+            else:
+                return self.send_error(HTTPStatus.BAD_REQUEST, f"No params were provided for request '{mode}'.")
         try:
             request = getattr(self, mode)  # get the function with 'mode' name
             request(params)
@@ -59,11 +63,12 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
             try:
                 idx = int(params['game'][0])
                 game = self.games[idx]
+                print(game)
                 self.send_response(HTTPStatus.OK)
                 self.send_header('Content-type', self.mimetype)
                 self.end_headers()
                 if game['winner']:
-                    result = {'winner': game['winner']}
+                    result = {'board': game['board'], 'winner': game['winner']}
                 else:
                     result = {'board': game['board'], 'next': game['next']}
                 self.wfile.write(bytes(json.dumps(result), 'utf-8'))
@@ -79,7 +84,7 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
             idx = int(params['game'][0])
             player = int(params['player'][0])
             row = int(params['x'][0])
-            column = int(params['y'][0])
+            col = int(params['y'][0])
             game = TicTacToeHandler.games[idx]
 
             result = dict()
@@ -88,16 +93,18 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
             # Ověření
             if game['next'] != player:
                 result['message'] = f"It's not currently player {player}'s turn.'"
-            elif game['board'][row][column] != 0:
+            elif not (0 <= row <= 2 and 0 <= col <= 2):
+                result['message'] = "The given coordinates are out of the 3x3 game board."
+            elif game['board'][row][col] != 0:
                 result['message'] = f"The required field is not blank."
-            elif row not in range(0, 2) or column not in range(0, 2):
-                result['message'] = "The given coordinates are out of the game board."
             elif game['winner'] is not None:
+                print("Winner: Player " + game['winner'])
                 result['message'] = "The game already has a winner."
             else:
                 # Validní tah
                 result['status'] = 'ok'
-                game['board'][row][column] = player
+                result['message'] = f"Valid move by player {player}."
+                game['board'][row][col] = player
                 game['next'] = 1 if player == 2 else 2  # předpokládá správnost
                 game['winner'] = self.decide_winner(game['board'])
 
@@ -106,40 +113,59 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(bytes(json.dumps(result), 'utf-8'))
         except ValueError:
-            self.send_error("Some of the passed parameters aren't numeric.")
+            self.send_error(HTTPStatus.BAD_REQUEST, "Some of the passed parameters aren't numeric.")
         except TypeError:
-            self.send_error("Some of the required parameters for 'play' are missing.")
+            self.send_error(HTTPStatus.BAD_REQUEST, "Some of the required parameters for 'play' are missing.")
         except (KeyError, IndexError):
             # game = self.games[idx]
             self.send_error(HTTPStatus.BAD_REQUEST, "Entered an ID of a non-existent game.")
+
+    def list(self, params):
+        gamelist = []
+        for key, value in self.games.items():
+            gamelist.append({'id': key, 'name': value['name']})
+        self.send_response(HTTPStatus.OK)
+        self.send_header('Content-type', self.mimetype)
+        self.end_headers()
+        self.wfile.write(bytes(json.dumps(gamelist), 'utf-8'))
 
     @staticmethod
     def decide_winner(board):
         """Zjistí vítěze hry z pole 3x3 – nebo remízu."""
         # Řádky
-        for i in range(3):
-            row = board[i]
+        for row in board:
+            if 0 in row:
+                continue
             player = row[0]  # první pole řádku
             if row[1] == player and row[2] == player:
+                print('row win')
                 return player  # zbylá dvě pole se shodují
         # Sloupce
         for i in range(3):
-            col = board[:, i]
+            col = [board[0][i], board[1][i], board[2][i]]
+            if 0 in col:
+                print(f"Continue: {col}")
+                continue
             player = col[0]  # první pole sloupce
             if col[1] == player and col[2] == player:
+                print('col win')
                 return player  # zbylá dvě pole se shodují
         # Diagonály
         dia1 = [board[0][0], board[1][1], board[2][2]]
         dia2 = [board[0][2], board[1][1], board[2][0]]
         for dia in [dia1, dia2]:
+            if 0 in dia:
+                continue
             player = dia[0]  # první pole diagonály
             if dia[1] == player and dia[2] == player:
+                print('dia win')
                 return player  # zbylá dvě pole se shodují
         # Remíza
         flatten = lambda l: [item for sublist in l for item in sublist]
         if 0 in flatten(board):
             return None  # Zbývají volná pole
         else:
+            print('draw win')
             return 0  # Remíza
 
 

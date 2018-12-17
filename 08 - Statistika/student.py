@@ -83,7 +83,7 @@ def get_stats(csv: pd.DataFrame) -> Dict[str, object]:
 
 if len(argv) != 3:
     exit("The program expects to be called with two command-line arguments:\n"
-         "./stat.py file.csv <id>")
+         "./student.py file.csv <id>")
 filename = argv[1]
 sid = argv[2]
 

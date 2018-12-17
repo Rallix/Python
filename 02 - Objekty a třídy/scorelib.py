@@ -47,18 +47,19 @@ class Composition:
         return f"Composition >> {{'Name': '{self.name}', 'Incipit': '{self.incipit}', 'Key': '{self.key}', " \
                f"'Genre': '{self.genre}', 'Year': '{self.year}', " \
                f"'Voices': '{[str(voice) for voice in self.voices]}', " \
-               f"'Authors': '{[str(author) for author in self.authors]}'}}"
+               f"'Authors': '{[str(author) for author in self.authors] if self.authors else ''}'}}"
 
 
 class Edition:
     def __init__(self, composition: Composition, authors: List[Person], name: Optional[str] = None):
         self.composition = composition  # instance of Composition
         self.authors = authors  # a list of Person instances
-        self.name = name  # from the Edition: field, or None
+        self.name = name.strip()  # from the Edition: field, or None
 
     def __str__(self):
-        return f"Edition >> {{'Composition': '{self.composition is not None} '" \
-               f"'Authors': '{[str(author) for author in self.authors] if self.authors else ''} 'Name: {self.name}\n'}}"
+        return f"Edition >> {{'Composition': '{self.composition is not None}', " \
+                            f"'Authors': {len(self.authors)}, " \
+                            f"'Name': '{self.name}'}}"
 
 
 class Print:
@@ -68,8 +69,7 @@ class Print:
         self.partiture = partiture
 
     def format(self):
-        base = str(self)
-        print(f"{base}\n");
+        return f"{str(self)}"
 
     def composition(self):
         return self.edition.composition
@@ -91,16 +91,17 @@ class Print:
         Incipit: treble 4/4 f'2 c8. a16 f8. a16 |
         """
         print_number = f"Print Number: {self.print_id}\n"
-        composer = f"Composer: {'; '.join(str(self.composition().authors)) if self.composition().authors else ''}\n"
+        composer = f"Composer: {'; '.join([str(author) for author in self.composition().authors]) if self.composition().authors else ''}\n"
         title = f"Title: {self.edition.composition.name}\n"
         genre = f"Genre: {self.edition.composition.genre}\n"
         key = f"Key: {self.edition.composition.key}\n"
-        comp_year = f"Composition Year: {self.edition.composition.year}\n"
-        pub_year = f"Publication Year: ?　\n"
-        edition = f"Edition: {self.edition}\n"
-        editor = f"Editor: {'; '.join([author.name for author in self.edition.authors] if self.edition.authors else '')}\n"
-        partiture = f"Partiture: {self.partiture}\n"
-        voice = f"Voice: {'; '.join(str(self.edition.composition.voices))}\n"
+        comp_year = f"Composition Year: {self.edition.composition.year if self.edition.composition.year else ''}\n"
+        pub_year = f"Publication Year: \n"  # není třeba uvádět
+        edition = f"Edition: {xstr(self.edition.name) if self.edition else ''}\n"
+        editor = f"Editor: {'; '.join([author.name for author in self.edition.authors]) if self.edition.authors else ''}\n"
+        partiture = f"Partiture: {'yes' if self.partiture else 'no'}\n"
+        voice = '\n'.join([f"Voice {i+1}: {str(self.edition.composition.voices[i]).strip()}" for i in range(len(self.edition.composition.voices))]) + "\n"  # \
+            # f"Voice: {'; '.join([str(voice).strip() for voice in self.edition.composition.voices])}\n"
         incipit = f"Incipit: {self.edition.composition.incipit}\n"
 
         return f"{print_number}{composer}{title}{genre}{key}{comp_year}" \
@@ -110,9 +111,11 @@ class Print:
 def extract_record(record):
     """Z řetězce obsahujícího informace skladbě vytvoří slovník s konkrétními informacemi pod konkrétními klíči."""
     keys = ["Print Number", "Composer", "Title", "Genre", "Key", "Composition Year", "Publication Year", "Edition",
-            "Editor", "Partiture"]
+            "Editor", "Partiture", "Incipit"]
     full_record = {key: None for key in keys}  # Voice + Incipit can be multiple
-    full_record["Voice"] = full_record["Incipit"] = []
+    full_record["Composer"] = []
+    full_record["Editor"] = []
+    full_record["Voice"] = []
     for line in record.split('\n'):
         # Regular keys
         for key in keys:
@@ -132,7 +135,7 @@ def extract_record(record):
             continue
         found = re.match(r"Incipit( \d)*: (\S.*)", line)
         if found:
-            full_record["Incipit"].append(found.group(2))
+            full_record["Incipit"] = found.group(2)
     return full_record
 
 
@@ -206,12 +209,12 @@ def record_to_print(record) -> Print:
                               key=try_get(record, "Key"),
                               genre=try_get(record, "Genre"),
                               year=try_int(record["Composition Year"]) if try_get(record, "Composition Year") else None,
-                              voices=[parse_voice_string(voice) for voice in record["Voice"]],
+                              voices=[parse_voice_string(voice) for voice in record["Voice"]] if record["Voice"] else [],
                               # TODO: Voice is being split into individual letters (→ stop)
-                              authors=[parse_author_string(author) for author in record["Composer"]])
+                              authors=[parse_author_string(author) for author in record["Composer"]] if record["Composer"] else [])
     #  print("\n" + str(composition) + "\n")
     edition = Edition(composition=composition,
-                      authors=[parse_author_string(author) for author in record["Editor"]] if record["Editor"] else None,
+                      authors=[parse_author_string(author) for author in record["Editor"]] if record["Editor"] else [],
                       name=try_get(record, "Edition"))
     partiture = True if any(word in record["Partiture"] for word in ['yes', 'incomplete', 'piano']) else False
 
@@ -232,9 +235,6 @@ def load(filename: str) -> List[Print]:
             for plainRecord in contents.split('\n\n'):
                 all_records.append(extract_record(plainRecord))
         unsorted_prints = records_to_prints(all_records)
-        return sorted(unsorted_prints, key=lambda p: p.print_id)
+        return sorted(unsorted_prints, key=lambda p: int(p.print_id))
     except FileNotFoundError:
         sys.exit(f"The file '{filename}' couldn't be found.")
-
-
-# prints = load("./scorelib.txt")  # TODO: Smazat po testování
