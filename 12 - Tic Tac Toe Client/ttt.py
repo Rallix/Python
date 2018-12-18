@@ -169,12 +169,6 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
             # print('draw')
             return 0  # Remíza
 
-    @staticmethod
-    def is_empty(game):
-        """Zjistí, jestli je hrací pole hry úplně prázdné."""
-        flatten = lambda l: [item for sublist in l for item in sublist]
-        return all(field == 0 for field in flatten(game['board']))
-
 
 def run():
     if len(argv) != 2:
