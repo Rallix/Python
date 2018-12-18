@@ -123,7 +123,7 @@ def extract_record(record):
             regex = re.compile(f"{key}: (.*)")
             found = regex.match(line)
             if found:
-                capture = found.group(1)
+                capture = found.group(1).strip()
                 if key == "Composer" or key == "Editor":
                     full_record[key] = parse_composers(capture)
                 else:
@@ -132,11 +132,11 @@ def extract_record(record):
         # Numbered keys
         found = re.match(r"Voice \d+: (\S.*)", line)
         if found:
-            full_record["Voice"].append(found.group(1))
+            full_record["Voice"].append(found.group(1).strip())
             continue
         found = re.match(r"Incipit( \d)*: (\S.*)", line)
         if found:
-            full_record["Incipit"] = found.group(2)
+            full_record["Incipit"] = found.group(2).strip()
     return full_record
 
 

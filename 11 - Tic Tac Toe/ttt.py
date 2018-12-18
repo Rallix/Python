@@ -19,12 +19,12 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         url = self.path
-        print(url)
+        # print(url)
 
         mode, found, params = url.partition('?')
         mode = re.sub('^\W*', '', mode)  # odstranit všechnu bagáž ze začátku
         params = parse.parse_qs(params)  # {'key' : ['value',…]}
-        print(f"{mode}: {params}")
+        # print(f"{mode}: {params}")
         if not mode:
             return self.send_error(HTTPStatus.BAD_REQUEST, f"No request provided. Try 'start', 'status' or 'play'.")
         if not found and mode != 'list':
@@ -44,7 +44,9 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
                 raise KeyError
             name = params['name'][0]
             new_game = {'name': name,
-                        'board': [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+                        'board': [[0, 0, 0],
+                                  [0, 0, 0],
+                                  [0, 0, 0]],
                         'next': 1,
                         'winner': None}
             TicTacToeHandler.index += 1  # Zvýšit index pro vytvoření další hry
@@ -63,7 +65,7 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
             try:
                 idx = int(params['game'][0])
                 game = self.games[idx]
-                print(game)
+                # print(game)
                 self.send_response(HTTPStatus.OK)
                 self.send_header('Content-type', self.mimetype)
                 self.end_headers()
@@ -75,7 +77,7 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
             except ValueError:
                 self.send_error(HTTPStatus.BAD_REQUEST, "The game parameter expects its value ID to be numeric.")
             except (KeyError, IndexError):
-                self.send_error(HTTPStatus.BAD_REQUEST, "Entered an ID of a non-existent game.")
+                self.send_error(HTTPStatus.NOT_FOUND, "Entered an ID of a non-existent game.")
         except KeyError:
             self.send_error(HTTPStatus.BAD_REQUEST, "Unknown parameter, expecting 'game'.")
 
@@ -83,27 +85,27 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
         try:
             idx = int(params['game'][0])
             player = int(params['player'][0])
-            row = int(params['x'][0])
-            col = int(params['y'][0])
+            row = int(params['y'][0])  # vertikálně jsou řádky
+            col = int(params['x'][0])  # horizontálně jsou sloupce
             game = TicTacToeHandler.games[idx]
 
             result = dict()
             result['status'] = 'bad'  # Výchozí: špatně
             result['message'] = 'Unknown state.'
             # Ověření
-            if game['next'] != player:
+            if game['winner'] is not None:
+                # print(f"Winner: Player {game['winner']}")
+                result['message'] = "The game already has a winner."
+            elif game['next'] != player:
                 result['message'] = f"It's not currently player {player}'s turn.'"
             elif not (0 <= row <= 2 and 0 <= col <= 2):
-                result['message'] = "The given coordinates are out of the 3x3 game board."
+                result['message'] = "The given zero-based coordinates are out of the 3x3 game board."
             elif game['board'][row][col] != 0:
                 result['message'] = f"The required field is not blank."
-            elif game['winner'] is not None:
-                print("Winner: Player " + game['winner'])
-                result['message'] = "The game already has a winner."
             else:
                 # Validní tah
                 result['status'] = 'ok'
-                result['message'] = f"Valid move by player {player}."
+                result['message'] = f"Player {player} made a valid move at {col}x{row}."
                 game['board'][row][col] = player
                 game['next'] = 1 if player == 2 else 2  # předpokládá správnost
                 game['winner'] = self.decide_winner(game['board'])
@@ -118,7 +120,7 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
             self.send_error(HTTPStatus.BAD_REQUEST, "Some of the required parameters for 'play' are missing.")
         except (KeyError, IndexError):
             # game = self.games[idx]
-            self.send_error(HTTPStatus.BAD_REQUEST, "Entered an ID of a non-existent game.")
+            self.send_error(HTTPStatus.NOT_FOUND, "Entered an ID of a non-existent game.")
 
     def list(self, params):
         gamelist = []
@@ -138,17 +140,16 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
                 continue
             player = row[0]  # první pole řádku
             if row[1] == player and row[2] == player:
-                print('row win')
+                # print('row win')
                 return player  # zbylá dvě pole se shodují
         # Sloupce
         for i in range(3):
             col = [board[0][i], board[1][i], board[2][i]]
             if 0 in col:
-                print(f"Continue: {col}")
                 continue
             player = col[0]  # první pole sloupce
             if col[1] == player and col[2] == player:
-                print('col win')
+                # print('col win')
                 return player  # zbylá dvě pole se shodují
         # Diagonály
         dia1 = [board[0][0], board[1][1], board[2][2]]
@@ -158,15 +159,21 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
                 continue
             player = dia[0]  # první pole diagonály
             if dia[1] == player and dia[2] == player:
-                print('dia win')
+                # print('dia win')
                 return player  # zbylá dvě pole se shodují
         # Remíza
         flatten = lambda l: [item for sublist in l for item in sublist]
-        if 0 in flatten(board):
+        if 0 in flatten(board):  # [[0,1,0],[2,0,0],[0,0,1]] --> [0,1,0,2,0,0,0,0,1]
             return None  # Zbývají volná pole
         else:
-            print('draw win')
+            # print('draw')
             return 0  # Remíza
+
+    @staticmethod
+    def is_empty(game):
+        """Zjistí, jestli je hrací pole hry úplně prázdné."""
+        flatten = lambda l: [item for sublist in l for item in sublist]
+        return all(field == 0 for field in flatten(game['board']))
 
 
 if len(argv) != 2:
@@ -180,7 +187,7 @@ except ValueError:
 
 server = ThreadedHTTPServer(('', PORT), TicTacToeHandler)  # "multiple games may run in parallel"
 try:
-    print(f'Started httpserver on port {PORT}.')
+    # print(f'Started httpserver on port {PORT}.')
     server.serve_forever()  # odpovídat na příchozí požadavky
 except KeyboardInterrupt:
     print('^C received, shutting down the web server')
