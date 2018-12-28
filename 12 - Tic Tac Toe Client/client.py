@@ -18,6 +18,7 @@ GAME_PHASES = {
     2: 'END'
 }
 
+
 def is_board_empty(board):
     """Zjistí, jestli je hrací pole úplně prázdné, t.j. nová hra."""
     flatten = lambda l: [item for sublist in l for item in sublist]
@@ -79,7 +80,7 @@ async def forever():
                     # Připojení se ke hře
                     # TODO: Check for a number, assign to 'game_id'
                     pass
-                # TODO: Join whatever valid game_id currently assigned
+                # TODO: Join whatever valid game_id currently assigned or repeat the loop
 
             elif GAME_PHASES[phase] == 'PLAY':
                 """Samotná hra: Polling + Tahy"""

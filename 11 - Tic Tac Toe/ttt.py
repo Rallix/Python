@@ -69,7 +69,7 @@ class TicTacToeHandler(BaseHTTPRequestHandler):
                 self.send_response(HTTPStatus.OK)
                 self.send_header('Content-type', self.mimetype)
                 self.end_headers()
-                if game['winner']:
+                if game['winner'] is not None:
                     result = {'board': game['board'], 'winner': game['winner']}
                 else:
                     result = {'board': game['board'], 'next': game['next']}
