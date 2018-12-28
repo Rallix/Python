@@ -5,7 +5,6 @@ from asyncio import sleep
 from http import HTTPStatus
 from sys import argv
 
-
 WAITING_INTERVAL = 1  # ptát se ~jednou za vteřinu
 BOARD_SYMBOLS = {
     0: '_',
@@ -63,9 +62,13 @@ async def forever():
                 open_ids = []
                 for game in game_list:
                     open_ids.append(game['id'])
-                if not open_ids:
+                if not open_ids:  # Žádná otevřená hra
                     print("No game is currently open. Try starting a new one: 'new [name]'.")
-
+                else:  # Otevřené hry
+                    for gid in open_ids:
+                        stats = await ask(ttt, f"status?game={gid}")
+                        if "board" in stats and is_board_empty(stats['board']):
+                            print(f"Open game '{game['name']}' with ID: {gid}")  # TODO: Zobrazit instrukce u protihráče
                 cmd, found, name = input().strip().partition(' ')
                 game_id = -1
                 if cmd == 'new':
@@ -74,16 +77,44 @@ async def forever():
                     if found:
                         with_name = f'?name={name}'
                     response = await ask(ttt, f"start{with_name}")
+
                     game_id = response['id']
-                    print(game_id)
+                    player = 1
+                    phase += 1  # Založena nová hra, přejít do fáze čekání na protihráče
                 else:
                     # Připojení se ke hře
-                    # TODO: Check for a number, assign to 'game_id'
-                    pass
-                # TODO: Join whatever valid game_id currently assigned or repeat the loop
-
-            elif GAME_PHASES[phase] == 'PLAY':
+                    try:
+                        game_id = int(cmd)
+                        if game_id not in open_ids:
+                            print(f"There's no open game with ID {game_id}.")
+                            continue
+                        player = 2
+                        phase += 1  # Připojeno k otevřené hře jako hráč '2', už se hraje
+                    except ValueError:
+                        print(f"Invalid input '{game_id}' – a numeric game ID expected.")
+                keep_waiting = True  # čekání na protihráče (vypsat jednou)
+            if GAME_PHASES[phase] == 'PLAY':
                 """Samotná hra: Polling + Tahy"""
+                # print('Playing!')
+                status = await ask(ttt, f"status?game={game_id}")
+                if 'winner' in status:
+                    if status['winner'] != player:
+                        # Zobrazit hrací plochu pro protihráče
+                        pass  # TODO: Zobrazit hrací plochu
+                    if status['winner'] == 0:
+                        print("draw")  # Remíza
+                    elif status['winner'] == player:
+                        print("you win")  # Vítězství
+                    else:
+                        print("you lose")  # Prohra
+
+                elif status['next'] == player:
+                    # TODO: Zobrazit hrací plochu
+                    # TODO: Čekat na tah
+                    keep_waiting = True
+                elif keep_waiting:
+                    opponent = 2 if player == 1 else 1
+                    print(f"Waiting for player {opponent}'s turn.")
                 await sleep(WAITING_INTERVAL)
     pass
 
