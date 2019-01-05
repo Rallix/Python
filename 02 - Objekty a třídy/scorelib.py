@@ -219,7 +219,7 @@ def record_to_print(record) -> Print:
                       name=try_get(record, "Edition"))
     partiture = True if any(word in record["Partiture"] for word in ['yes', 'incomplete', 'piano']) else False
 
-    return Print(edition, record["Print Number"], partiture)
+    return Print(edition, int(record["Print Number"].strip()), partiture)
 
 
 def records_to_prints(records) -> List[Print]:
