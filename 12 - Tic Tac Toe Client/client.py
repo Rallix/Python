@@ -9,7 +9,7 @@ WAITING_INTERVAL = 1  # ptát se ~jednou za vteřinu
 BOARD_SYMBOLS = {
     0: '_',
     1: 'x',
-    2: 'y'
+    2: 'o'
 }
 GAME_PHASES = {
     0: 'NEW_GAME',
@@ -50,6 +50,24 @@ async def show_board(ttt, game_id: int):
     return "\n".join(full_board)  # odřádkovat řádky
 
 
+async def play(ttt, player, game_id: int):
+    sign = BOARD_SYMBOLS[player]
+    while True:
+        col, found, row = input(f"your turn ({sign}): ").strip().partition(' ')
+        try:
+            if not found:
+                raise ValueError
+            x = int(col)
+            y = int(row)
+            turn = await ask(ttt, f"play?game={game_id}&player={player}&x={x}&y={y}")
+            if turn['status'] == 'bad':
+                raise ValueError
+            break
+        except ValueError:
+            print("invalid input")
+            continue
+
+
 async def forever():
     """Hlavní herní smyčka. Rozděleno na fáze."""
     async with aiohttp.ClientSession() as ttt:
@@ -58,18 +76,24 @@ async def forever():
             if GAME_PHASES[phase] == 'NEW_GAME':
                 """Zobrazovat seznam volných her a umožnit připojení."""
                 game_list = await ask(ttt, "list")
-                # print(game_list)
                 open_ids = []
                 for game in game_list:
                     open_ids.append(game['id'])
-                if not open_ids:  # Žádná otevřená hra
-                    print("No game is currently open. Try starting a new one: 'new [name]'.")
-                else:  # Otevřené hry
+                if open_ids:  # Otevřené hry
+                    to_remove = []
                     for gid in open_ids:
                         stats = await ask(ttt, f"status?game={gid}")
                         if "board" in stats and is_board_empty(stats['board']):
-                            print(f"Open game '{game['name']}' with ID: {gid}")  # TODO: Zobrazit instrukce u protihráče
-                cmd, found, name = input().strip().partition(' ')
+                            game_name = f" '{game['name']}'" if game['name'] else ''
+                            print(f"Open game{game_name} with ID: {gid}")
+                        else:
+                            to_remove.append(gid)  # Neprázdná hra – smazat
+                    open_ids = [i for i in open_ids if i not in to_remove]
+                if not open_ids:  # Žádná otevřená hra
+                    print("No game is currently open. Try starting a new one: 'new [name]'.")
+                else:
+                    print("Join an existing game: '<ID>', or try starting a new one: 'new [name]'.")
+                cmd, found, name = input().strip().partition(' ')  # TODO: Když se otevře hra, zatímco se čeká na input
                 game_id = -1
                 if cmd == 'new':
                     # Požadavek na založení nové hry
@@ -91,32 +115,41 @@ async def forever():
                         player = 2
                         phase += 1  # Připojeno k otevřené hře jako hráč '2', už se hraje
                     except ValueError:
-                        print(f"Invalid input '{game_id}' – a numeric game ID expected.")
-                keep_waiting = True  # čekání na protihráče (vypsat jednou)
+                        print(f"Invalid input '{cmd}' – a numeric game ID expected.")
+                waiting_message = True  # čekání na protihráče (vypsat jednou)
             if GAME_PHASES[phase] == 'PLAY':
                 """Samotná hra: Polling + Tahy"""
-                # print('Playing!')
                 status = await ask(ttt, f"status?game={game_id}")
                 if 'winner' in status:
                     if status['winner'] != player:
-                        # Zobrazit hrací plochu pro protihráče
-                        pass  # TODO: Zobrazit hrací plochu
+                        board = await show_board(ttt, game_id)
+                        print(board)
                     if status['winner'] == 0:
+                        # TODO: Při remíze hrací plocha zobrazená dvakrát
                         print("draw")  # Remíza
                     elif status['winner'] == player:
                         print("you win")  # Vítězství
                     else:
                         print("you lose")  # Prohra
+                    phase += 1
 
                 elif status['next'] == player:
-                    # TODO: Zobrazit hrací plochu
-                    # TODO: Čekat na tah
-                    keep_waiting = True
-                elif keep_waiting:
-                    opponent = 2 if player == 1 else 1
-                    print(f"Waiting for player {opponent}'s turn.")
+                    board = await show_board(ttt, game_id)
+                    print(board)
+
+                    # TODO: Zakázat hrát bez protihráče
+                    await play(ttt, player, game_id)
+
+                    board = await show_board(ttt, game_id)
+                    print(board)
+                    waiting_message = True
+                elif waiting_message:
+                    # opponent = 2 if player == 1 else 1
+                    print(f"waiting for the other player")
+                    waiting_message = False
                 await sleep(WAITING_INTERVAL)
-    pass
+            if GAME_PHASES[phase] == 'END':
+                exit(0)  # Zavřít celou hru
 
 
 if len(argv) != 3:
