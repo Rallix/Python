@@ -106,7 +106,7 @@ class Print:
         incipit = f"Incipit: {xstr(self.edition.composition.incipit)}\n"
 
         return f"{print_number}{composer}{title}{genre}{key}{comp_year}" \
-               f"{pub_year}{edition}{editor}{partiture}{voice}{incipit}\n"
+               f"{pub_year}{edition}{editor}{partiture}{voice}{incipit}"
 
 
 def extract_record(record):
@@ -169,11 +169,11 @@ def parse_author_string(raw: str) -> Person:
 
 def parse_voice_string(raw: str) -> Voice:
     """Vytvoří hlas z řetězce obsahujícího hlasové informace."""
-    found = re.match(r"(.*?)(\S+?--\S+?)(, )?(.*)", raw)
+    found = re.match(r"(.*?)(\S+?--\S+(, | )?)(.*)", raw)
     if not found:
         return Voice(raw, None)
     else:
-        range = found.group(2)
+        range = found.group(2).strip().rstrip(',')
         name = found.group(1) + found.group(4)
         if name:
             return Voice(name, range)
@@ -203,23 +203,20 @@ def try_get(record, key: str) -> Optional[str]:
 
 def record_to_print(record) -> Print:
     """Z jednoho záznamu vytvoří instanci Print"""
-    # TODO: Initialize properly all values
-    #  print(record)
+    print_id = int(record["Print Number"].strip())
     composition = Composition(name=try_get(record, "Title"),
                               incipit=try_get(record, "Incipit"),
                               key=try_get(record, "Key"),
                               genre=try_get(record, "Genre"),
                               year=try_int(record["Composition Year"]) if try_get(record, "Composition Year") else None,
                               voices=[parse_voice_string(voice) for voice in record["Voice"]] if record["Voice"] else [],
-                              # TODO: Voice is being split into individual letters (→ stop)
                               authors=[parse_author_string(author) for author in record["Composer"]] if record["Composer"] else [])
-    #  print("\n" + str(composition) + "\n")
     edition = Edition(composition=composition,
                       authors=[parse_author_string(author) for author in record["Editor"]] if record["Editor"] else [],
                       name=try_get(record, "Edition"))
     partiture = True if any(word in record["Partiture"] for word in ['yes', 'incomplete', 'piano']) else False
 
-    return Print(edition, int(record["Print Number"].strip()), partiture)
+    return Print(edition, print_id, partiture)
 
 
 def records_to_prints(records) -> List[Print]:
@@ -233,8 +230,10 @@ def load(filename: str) -> List[Print]:
     try:
         with open(filename, 'r', encoding='utf-8') as FILE:
             contents = FILE.read()
-            for plainRecord in contents.split('\n\n'):
-                all_records.append(extract_record(plainRecord))
+            plain_records = filter(None, contents.split('\n\n'))
+            for plain_record in plain_records:
+                record_dict = extract_record(plain_record)
+                all_records.append(record_dict)
         unsorted_prints = records_to_prints(all_records)
         return sorted(unsorted_prints, key=lambda p: int(p.print_id))
     except FileNotFoundError:

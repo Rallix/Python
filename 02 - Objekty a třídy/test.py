@@ -13,4 +13,4 @@ filename = argv[1]
 prints = scorelib.load(filename)
 
 for p in prints:
-    sys.stdout.write(p.format())
+    print(p.format())
