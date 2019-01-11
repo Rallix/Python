@@ -83,16 +83,16 @@ async def forever():
                     to_remove = []
                     for gid in open_ids:
                         stats = await ask(ttt, f"status?game={gid}")
-                        if "board" in stats and is_board_empty(stats['board']):
-                            game_name = f" '{game['name']}'" if game['name'] else ''
-                            print(f"Open game{game_name} with ID: {gid}")
-                        else:
+                        if not ("board" in stats and is_board_empty(stats['board'])):
                             to_remove.append(gid)  # Neprázdná hra – smazat
                     open_ids = [i for i in open_ids if i not in to_remove]
                 if not open_ids:  # Žádná otevřená hra
                     print("No game is currently open. Try starting a new one: 'new [name]'.")
                 else:
-                    print("Join an existing game: '<ID>', or try starting a new one: 'new [name]'.")
+                    print("Try starting a new game ('new [name]') or join an existing one ('<id>'): ")
+                    for gid in open_ids:
+                        game_name = f" {game['name']}" if game['name'] else ''
+                        print(f"{gid}{game_name}")
                 cmd, found, name = input().strip().partition(' ')  # TODO: Když se otevře hra, zatímco se čeká na input
                 game_id = -1
                 if cmd == 'new':
