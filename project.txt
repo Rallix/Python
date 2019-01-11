@@ -93,7 +93,7 @@ _ _ _ _ _ _   _ _ _ _ _ _
 Nemůže jít dál, protože dva kameny na sobě blokují cestu
 	pohne proto prostředním kamenem (zbývá 2)
 
-move 3 2
+move 2 2
 _ _ _ _ _ _   _ _ _ _ _ _
 1 _ _ _ _ 1   _ 1 _ B _ _
 _ _ _ _ _ _   _ _ _ _ _ _
