@@ -21,15 +21,20 @@ Zde je úplný seznam, lepší je pochopitelný s obrázky dostupnými v odkazec
 8. A piece sat alone on a point is captured if an opponent's piece lands on that same point. The captured piece is removed from the board, and its owner must on his turn re-enter it before he moves any other piece (see rule 5(iv)).
 9. The game is finished when one of the players has borne all fifteen of his pieces off the board. He is then declared the winner.
 
-Protože pravidla jsou docela složitá (více kostek s možností volby jakou použít, patnáct kamenů, vršení kamenů na sebe, odebírání, blokování, očíslovaná pole, povinnost kámen vrátit do hry),
+Protože pravidla jsou docela složitá:
+    – více kostek s možností volby jakou použít
+    – patnáct hracích kamenů a jejich vršení na sebe
+    – tři možné akce, co lze v tahu provést; pro různé hrací kameny (vložení do hry, posun, odebrání ze hry)
+    – odebírání, blokování, očíslovaná pole, povinnost kámen vrátit do hry hned po jeho sebrání…
 asi bych ideálně hru udělal stejně jako piškvorky, t.j. abych se zabýval hrou samotnou a jejími pravidly, ne klientem a dotazy na server, což bych převzal z posledních úkolů, jakmile mi projdou testy.
 
 Např.:
 Hráč 1 – arabské číslice
-Hráč 2 – římské číslice nebo písmena (spíše písmena kvůli přehlednějšímu formátování)
-To pro odlišení; může totiž být více kamenů stejného hráče na jednom poli a různé bizarní Unicode znaky "https://unicodelookup.com/#circled%20digit/1" nejsou dobře vidět a nemusí se v konzoli zobrazit vůbec. Víc jak patnáct kamenů (nejhorší případ) na jednom poli nikdy nebude, přesto pochybuji, že se jich někdy sejde víc než deset, aby to rozhodilo formát (I:čísla + II:písmena).
+Hráč 2 – písmena (spíše písmena než např. římské číslice kvůli přehlednějšímu formátování)
+To pro odlišení; může totiž být více kamenů stejného hráče na jednom poli a různé bizarní Unicode znaky typu "https://unicodelookup.com/#circled%20digit/1" nejsou dobře vidět a nemusí se v konzoli zobrazit vůbec.
+Víc jak patnáct kamenů (nejhorší případ) na jednom poli nikdy nebude, přesto pochybuji, že se jich někdy sejde víc než deset, aby to rozhodilo formát (I:čísla + II:písmena).
 
-Alternativně lze každému hráči zobrazovat herní plochu zrcadlově obrácenou, jelikož sedí proti sobě.
+Alternativně lze každému hráči ještě zobrazovat herní plochu zrcadlově obrácenou, jelikož sedí proti sobě.
 
 Parametry příkazů se musí shodovat s některým hodem kostky
 
