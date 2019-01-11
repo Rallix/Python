@@ -51,6 +51,7 @@ _ _ _ _ _ _   _ _ _ _ _ _
 
 Hráč 1 hodí 1, 4, 6 (resp. se mu vypíše hod) a umístí kameny na odpovídající pozice ve středním pruhu zleva
 
+(po každém příkazu se vypíše průběžný stav; zde jen zjednodušeno)
 place 4
 place 1
 place 6
@@ -133,7 +134,9 @@ _ _ _ _ _ _   _ 2 _ _ _ _
 _ _ _ _ _ _   _ _ _ _ _ _
 _ C _ _ _ _   _ _ _ _ _ _
 
-Remaining stones (Player 1: 14, Player 2: 15)
+Remaining pieces:
+    Player 1: 14
+    Player 2: 15
 
 Druhý hráč:
 _ _ _ _ _ _   _ _ _ _ C _
