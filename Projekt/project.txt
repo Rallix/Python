@@ -144,3 +144,8 @@ _ _ _ _ _ _   _ _ _ _ _ _
 _ 2 _ _ _ _   _ _ _ _ _ _
 
 Atd.
+
+Doplnění:
+Použit modul 'console' (0.94) pro barevné a formátované výpisy, které odlišují hráče od sebe:
+https://pypi.org/project/console/
+(případná použitá konzole by měla podporovat výpisy v UTF-8)
