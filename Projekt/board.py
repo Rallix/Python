@@ -206,7 +206,7 @@ class Board:
                             continue
                         player.take(roll)
                         remaining = player.pieces + player.count_active_pieces()
-                        print(f"Zbývá {self.col_wrap(self.get_piece_string(remaining), player)}.")
+                        print(f"Zbýv{'ají' if 1 < remaining < 5 else 'á'} {self.col_wrap(self.get_piece_string(remaining), player)}.")
                         if player.is_winner():
                             # Odebrány všechny kameny ze hry, hráč vítězí
                             self.winner = player
@@ -225,6 +225,9 @@ class Board:
                         print(f"Je nutné zvolit jedno z čísel hozených na kostce: {dice_rolls}")
                         continue
                     # Zvolený kámen existuje
+                    if piece_id <= 0:
+                        print("Pořadí kamenů je číslováno od jedničky.")
+                        continue
                     sum_pieces = player.count_active_pieces()
                     if piece_id > sum_pieces:
                         print(f"Nelze pohnout {self.col_wrap(f'{piece_id}. kamenem')}, "
