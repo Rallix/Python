@@ -6,6 +6,7 @@ http://www.cyningstan.com/game/61/ludus-duodecim-scriptorum
 XII Scripta je starořímská stolní hra, pravděpodobně předchůdce vrhcábů, kterou bych se chtěl pokusit naprogramovat.
 Pravidla se nedochovala, nicméně se je pokusil rekonstruovat historik H. J. R. Murray.
 Zde je úplný seznam, lepší je pochopitelný s obrázky dostupnými v odkazech výše:
+Pravidla jsou přístupná (v češtině) i z herního menu; lze spustit i zkrácenou hru s méně kameny.
 
 1. Ludus duodecim scriptorum is played by two on a board consisting of three rows of twelve points, each row of twelve being divided in half.
 2. Each player has fifteen pieces of his own colour, either black or white. At the start of the game these pieces are off the board.
@@ -21,26 +22,37 @@ Zde je úplný seznam, lepší je pochopitelný s obrázky dostupnými v odkazec
 8. A piece sat alone on a point is captured if an opponent's piece lands on that same point. The captured piece is removed from the board, and its owner must on his turn re-enter it before he moves any other piece (see rule 5(iv)).
 9. The game is finished when one of the players has borne all fifteen of his pieces off the board. He is then declared the winner.
 
-Protože pravidla jsou docela složitá:
-    – více kostek s možností volby jakou použít
-    – patnáct hracích kamenů a jejich vršení na sebe
-    – tři možné akce, co lze v tahu provést; pro různé hrací kameny (vložení do hry, posun, odebrání ze hry)
-    – odebírání, blokování, očíslovaná pole, povinnost kámen vrátit do hry hned po jeho sebrání…
-asi bych ideálně hru udělal stejně jako piškvorky, t.j. abych se zabýval hrou samotnou a jejími pravidly, ne klientem a dotazy na server, což bych převzal z posledních úkolů, jakmile mi projdou testy.
+Skripty:
+Main: xii_scripta (hlavní menu hry)
+Hra: board, player (hrací deska a hráči)
+Kostky: shuffle_bag, dice
 
-Např.:
-Hráč 1 – arabské číslice
-Hráč 2 – písmena (spíše písmena než např. římské číslice kvůli přehlednějšímu formátování)
-To pro odlišení; může totiž být více kamenů stejného hráče na jednom poli a různé bizarní Unicode znaky typu "https://unicodelookup.com/#circled%20digit/1" nejsou dobře vidět a nemusí se v konzoli zobrazit vůbec.
+Hra se hraje jako 'hotseat', přičemž hráči (jakoby) sedí proti sobě:
+Hráč I (žlutá) – arabské číslice
+Hráč II (zelená) – písmena
+Kameny hráčů jsou odlišeny barevně, pro případ nespolupracující konzole jsem pro jistotu (a přehlednost) nechal čísla + abecedu
 Víc jak patnáct kamenů (nejhorší případ) na jednom poli nikdy nebude, přesto pochybuji, že se jich někdy sejde víc než deset, aby to rozhodilo formát (I:čísla + II:písmena).
+
+Pro zrychlení hry je přidán i mód, co má pouze 3 kameny místo patnácti (i tak je jedna hra aspoň na pět minut)
+
+Házení kostkou je dělané metodou 'shuffle bag'
+https://gamedevelopment.tutsplus.com/tutorials/shuffle-bags-making-random-feel-more-random--gamedev-1249
+– protože pseudonáhodné hodnoty nejsou pro hry dostatečně 'spravedlivé'; shuffle bag hody kostkou rozloží víceméně rovnoměrně
+– jednoduše řečeno, pokud hráč hodí celkem 10× jedničku, musí 10× hodit i ostatní číslice, než mu bude moci zase padnout jednička
+
+V projektu je použit modul 'console' (0.94) pro barevné a formátované výpisy:
+https://pypi.org/project/console/
+(případná použitá konzole by měla podporovat výpisy v UTF-8)
 
 Alternativně lze každému hráči ještě zobrazovat herní plochu zrcadlově obrácenou, jelikož sedí proti sobě.
 
 Parametry příkazů se musí shodovat s některým hodem kostky
 
 place <pole>						– vloží kámen do hry na pozici 1-6
-move <kolikátý kámen> <o kolik>		– pohne kamenem s určitým pořadím od startu o počet polí
+move <kolikátý kámen> <o kolik>		– pohne kamenem s určitým pořadím (počítají se i ty na sobě) od startu o počet polí
 take <pole>							– sebere kámen, je-li nějaký na odpovídajícím koncovém poli 1-6
+pass                                - přeskočí tah hráče (např. když je blokován a nemůže použít žádnou kostku)
+yield                               - hráč se vzdá ve prospěch protivníka
 
 Příklad hry:
 
@@ -144,8 +156,3 @@ _ _ _ _ _ _   _ _ _ _ _ _
 _ 2 _ _ _ _   _ _ _ _ _ _
 
 Atd.
-
-Doplnění:
-Použit modul 'console' (0.94) pro barevné a formátované výpisy, které odlišují hráče od sebe:
-https://pypi.org/project/console/
-(případná použitá konzole by měla podporovat výpisy v UTF-8)

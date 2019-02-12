@@ -205,7 +205,8 @@ class Board:
                             print("Na uvedeném poli se nenachází žádný váš kámen.")
                             continue
                         player.take(roll)
-                        print(f"Zbývá {self.col_wrap(self.get_piece_string(player.pieces), player)}.")
+                        remaining = player.pieces + player.count_active_pieces()
+                        print(f"Zbývá {self.col_wrap(self.get_piece_string(remaining), player)}.")
                         if player.is_winner():
                             # Odebrány všechny kameny ze hry, hráč vítězí
                             self.winner = player
